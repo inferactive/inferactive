@@ -3,9 +3,9 @@
   "description": "Tool for journalists that suggests story ideas from datasets",
   "version": "0.0.1",
   "author": "Dylan Freedman",
-  "repository":{
-    "type" : "git",
-    "url" : "https://github.com/inferactive/inferactive"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/inferactive/inferactive"
   },
   "license": "MIT",
   "devDependencies": {
@@ -42,6 +42,7 @@
     ]
   },
   "dependencies": {
-    "@ava/babel-preset-stage-4": "^1.1.0"
+    "@ava/babel-preset-stage-4": "^1.1.0",
+    "papaparse": "^4.3.7"
   }
 }

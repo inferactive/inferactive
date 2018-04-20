@@ -1,7 +1,23 @@
-<h1>Hello {name}!</h1>
+<ul>
+  {#await csv}
+    <li>Loading...</li>
+  {:then rows}
+    {#each rows.data as row}
+      <li>{row}</li>
+    {/each}
+  {:catch error}
+    <li>Error</li>
+  {/await}
+</ul>
 
-<style>
-	h1 {
-		color: purple;
-	}
-</style>
+<script>
+  import Papa from 'papaparse';
+
+  export default {
+    data() {
+      return {
+        csv: Papa.parse('a,b,c\n1,2,3\n4,5,6'),
+      };
+    },
+  };
+</script>
