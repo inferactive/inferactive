@@ -1,9 +1,73 @@
-<Table csv="zip_codes_states.csv" />
+<svelte:window on:mousewheel="preventBack(event)"/>
+
+{#if file == null}
+  <div>Upload a CSV file</div><input ref:files type="file" on:change="updateFiles()">
+{:else}
+  <div>Looking at <b>{file.name}</b></div>
+  <div><button on:click="set({file: null})">Reset</button></div>
+  <div class="limited">
+    <Table csv={file} limit="-1" on:complete="handleResults(event)" />
+  </div>
+{/if}
 
 <script>
   import Table from './table.html';
+  import {UntypedSeries} from 'infernet/lib/untyped_series.js';
+
+  // Return an element and all of its parents as an array.
+  function elemAndParents(elem) {
+    let parents = [elem];
+    if (elem.parentElement !== null) parents = parents.concat(elemAndParents(elem.parentElement));
+    return parents;
+  }
 
   export default {
+    data() {
+      return {
+        file: null,
+      };
+    },
+    methods: {
+      updateFiles() {
+        const files = this.refs.files.files;
+        console.log(files);
+        if (files.length == 1) {
+          this.set({file: files[0]});
+        }
+      },
+
+      handleResults(results) {
+        const columns = results[0].data;
+        const series = columns.map((column, i) => {
+          return new UntypedSeries(results.slice(1).map((row) => row.data[i]));
+        });
+        console.log(series.map((x) => x.inferType().name));
+      },
+
+      // Prevent two-finger swipe back navigation in browser.
+      preventBack(event) {
+        if (event.deltaX < 0 && elemAndParents(event.target).filter((x) => x.scrollLeft > 0).length == 0) {
+          event.preventDefault();
+        }
+        if (event.deltaX > 0 && elemAndParents(event.target).filter((x) => x.scrollLeft + x.offsetWidth < x.scrollWidth).length == 0) {
+          event.preventDefault();
+        }
+        if (event.deltaY < 0 && elemAndParents(event.target).filter((x) => x.scrollTop > 0).length == 0) {
+          event.preventDefault();
+        }
+        if (event.deltaY > 0 && elemAndParents(event.target).filter((x) => x.scrollTop + x.offsetHeight < x.scrollHeight).length == 0) {
+          event.preventDefault();
+        }
+      },
+    },
     components: {Table},
   };
-</script>>
+</script>
+
+<style>
+  .limited {
+    height: 800px;
+    border: solid 1px gray;
+    box-sizing: border-box;
+  }
+</style>

@@ -49,8 +49,7 @@
         this.updateRows();
       } else if (current.items.length > this.numItems) {
         if (this.updateTimeout !== null) {
-          clearInterval(this.updateTimeout);
-          this.updateTimeout = null;
+          return;
         }
         this.updateTimeout = setTimeout(() => this.updateRows(), 100);
       }

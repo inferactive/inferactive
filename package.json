@@ -16,7 +16,7 @@
     "rollup-plugin-node-resolve": "^3.0.3",
     "rollup-plugin-svelte": "^4.0.0",
     "rollup-plugin-uglify": "^3.0.0",
-    "serve": "^6.5.1",
+    "serve": "^6.5.6",
     "svelte": "^2.0.0"
   },
   "scripts": {
@@ -44,6 +44,7 @@
   "dependencies": {
     "@ava/babel-preset-stage-4": "^1.1.0",
     "@sveltejs/svelte-virtual-list": "^2.0.0",
+    "infernet": "git://github.com/inferactive/infernet_lib.git",
     "papaparse": "^4.3.7"
   }
 }

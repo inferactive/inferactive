@@ -15,29 +15,52 @@
 
   export default {
     oncreate() {
-      const {results, at_a_time, csv} = this.get();
-      const limit = results.length + at_a_time;
+      const {results, at_a_time, csv, stream, limit: originalLimit} = this.get();
+      const limit = originalLimit != -1 ? results.length + at_a_time : -1;
       this.set({limit});
-      Papa.parse(csv, {
-        download: true,
-        delimiter: ',',
-        step: (result, parser) => {
-          const {results} = this.get();
-          results.push({
-            index: results.length,
-            data: result.data[0],
-          });
-          this.set({results});
-          if (results.length > this.get().limit) {
-            parser.pause();
-            this.set({parser});
-          }
-        },
-      });
+      if (stream) {
+        Papa.parse(csv, {
+          download: true,
+          delimiter: ',',
+          skipEmptyLines: true,
+          worker: true,
+          step: (result, parser) => {
+            const {results} = this.get();
+            results.push({
+              index: results.length,
+              data: result.data[0],
+            });
+            this.set({results});
+            const {limit} = this.get();
+            if (limit != -1 && results.length > limit) {
+              parser.pause();
+              this.set({parser});
+            }
+          },
+          complete: () => {
+            this.fire('complete', this.get().results);
+          },
+        });
+      } else {
+        Papa.parse(csv, {
+          download: true,
+          delimiter: ',',
+          complete: (parsedResults) => {
+            const {results} = this.get();
+            for (const result of parsedResults.data) {
+              results.push({
+                index: results.length,
+                data: result,
+              });
+            }
+            this.set({results});
+          },
+        });
+      }
     },
 
     onstate({changed, current}) {
-      if (changed.end && current.end == current.limit) {
+      if (current.limit != -1 && changed.end && current.end > current.limit - current.retrieve_next) {
         this.set({limit: current.limit + current.at_a_time});
         if (current.parser) current.parser.resume();
       }
@@ -48,8 +71,10 @@
         csv: '',
         results: [],
         end: 0,
+        stream: true,
         parser: null,
         at_a_time: 5000,
+        retrieve_next: 1500,
         limit: 1,
         RowComponent,
       };
@@ -59,11 +84,11 @@
 </script>
 
 <style>
-  .table {
+  .tableview {
     height: 100%;
   }
 
-  .tableview {
+  .table {
     height: 100%;
   }
 
@@ -96,8 +121,8 @@
     text-align: left;
   }
 
-  :global(.cell + .cell) {
-    border-left: 1px solid gray;
+  :global(.cell) {
+    border-right: 1px solid gray;
   }
 
   :global(.flow) {
