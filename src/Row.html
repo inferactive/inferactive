@@ -1,0 +1,12 @@
+<div class="cell first">
+  <div class="flow">
+    {index == 0 ? '#' : index}
+  </div>
+</div>
+{#each data as cell}
+  <div class="cell">
+    <div class="flow">
+      {cell}
+    </div>
+  </div>
+{/each}

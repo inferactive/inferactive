@@ -1,0 +1,24 @@
+<div class="table">
+  <VirtualTable {items} {component} bind:end=end />
+</div>
+
+<script>
+  import VirtualTable from './VirtualTable.html';
+
+  export default {
+    oncreate() {
+      console.log(this.get());
+    },
+    data() {
+      return {
+        items: [],
+        component: null,
+        end: 0,
+      };
+    },
+    onstate(changes) {
+      console.log(changes);
+    },
+    components: {VirtualTable},
+  };
+</script>

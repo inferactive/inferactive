@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "@ava/babel-preset-stage-4": "^1.1.0",
+    "@sveltejs/svelte-virtual-list": "^2.0.0",
     "papaparse": "^4.3.7"
   }
 }

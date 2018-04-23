@@ -1,23 +1,9 @@
-<ul>
-  {#await csv}
-    <li>Loading...</li>
-  {:then rows}
-    {#each rows.data as row}
-      <li>{row}</li>
-    {/each}
-  {:catch error}
-    <li>Error</li>
-  {/await}
-</ul>
+<Table csv="zip_codes_states.csv" />
 
 <script>
-  import Papa from 'papaparse';
+  import Table from './table.html';
 
   export default {
-    data() {
-      return {
-        csv: Papa.parse('a,b,c\n1,2,3\n4,5,6'),
-      };
-    },
+    components: {Table},
   };
-</script>
+</script>>

@@ -1,0 +1,168 @@
+<svelte:window on:resize="handleScroll()"/>
+
+<div ref:viewport on:scroll='handleScroll()' style='height: {height};'>
+  <div ref:container style='padding-top: {top}px; padding-bottom: {bottom}px;'>
+    {#each visible as item (item.index)}
+      <div class="row {item.index == 0 ? 'header' : ''}">
+        <svelte:component this={component} {..._props} {...item.data} />
+      </div>
+    {/each}
+    {#if items.length > 0}
+      <div class="row header fixed" style="top: {scrollTop}px;">
+        <svelte:component this={component} {..._props} {...items[0]} />
+      </div>
+    {/if}
+  </div>
+</div>
+
+<style>
+  ref:viewport {
+    overflow-y: auto;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  ref:container {
+    position: relative;
+  }
+
+  .row {
+    overflow: hidden;
+  }
+</style>
+
+<script>
+  export default {
+    data() {
+      return { top: 0, bottom: 0, start: 0, end: 0, height: '100%', _props: {}, scrollTop: 0 };
+    },
+
+    computed: {
+      visible: ({ items, start, end }) => {
+        return items.slice(start, end).map((data, i) => {
+          return { index: i + start, data };
+        });
+      },
+    },
+
+    onstate({changed, current, previous}) {
+      if (changed.items && !previous) {
+        this.updateRows();
+      } else if (current.items.length > this.numItems) {
+        if (this.updateTimeout !== null) {
+          clearInterval(this.updateTimeout);
+          this.updateTimeout = null;
+        }
+        this.updateTimeout = setTimeout(() => this.updateRows(), 100);
+      }
+    },
+
+    oncreate() {
+      const { _props } = this.get();
+
+      this.updateTimeout = null;
+
+      const keys = Object.keys(this.options.data).filter(key => key !== 'items' && key !== 'component');
+      if (keys.length) {
+        const state = this.get();
+        keys.forEach(key => {
+          _props[key] = state[key];
+        });
+        this.set({ _props });
+
+        this.on('state', ({ changed, current }) => {
+          if (!keys.some(key => changed[key])) return;
+
+          const _props = {};
+          keys.forEach(key => {
+            _props[key] = current[key];
+          });
+          this.set({ _props });
+        });
+      }
+
+      this.avg = null;
+      this.filledI = null;
+      this.updateRows();
+    },
+
+    methods: {
+      updateRows() {
+        this.updateTimeout = null;
+        const { items } = this.get();
+        this.numItems = items.length;
+        if (this.avg === null) {
+          const { viewport, container } = this.refs;
+          const viewportHeight = viewport.offsetHeight;
+
+          this.rows = container.getElementsByClassName('row');
+          this.heightMap = [];
+
+          let height = 0;
+          let i = 0;
+
+          while (height < viewportHeight && i < items.length) {
+            this.set({ end: i + 1 });
+
+            const rowHeight = this.heightMap[i] = this.rows[i].offsetHeight;
+            height += rowHeight;
+
+            i += 1;
+          }
+
+          if (height >= viewportHeight) {
+            this.avg = Math.round(height / i);
+            this.filledI = i;
+          }
+        }
+        for (let j = this.filledI; j < items.length; j++) this.heightMap[j] = this.avg;
+
+        this.set({
+          bottom: (items.length - this.filledI) * this.avg
+        });
+        if (this.filledI) this.handleScroll();
+      },
+
+      handleScroll() {
+        if (!this.rows) return;
+        const { items, start, end } = this.get();
+        const { offsetHeight, scrollTop } = this.refs.viewport;
+        this.set({scrollTop});
+
+        let paddingTop = 0;
+        let offset = 0;
+        let i = 0;
+
+        for (let v = 0; v < this.rows.length; v += 1) {
+          this.heightMap[start + v] = this.rows[v].offsetHeight;
+        }
+
+        for (; i < items.length; i += 1) {
+          offset += this.heightMap[i];
+          if (offset > scrollTop) break;
+
+          paddingTop = offset;
+        }
+
+        const newStart = i++;
+
+        for (; i < items.length; i += 1) {
+          if (offset > scrollTop + offsetHeight) break;
+          offset += this.heightMap[i];
+        }
+
+        const newEnd = i;
+
+        if (newStart === start && newEnd === end) return;
+
+        let paddingBottom = 0;
+        for (; i < items.length; i += 1) paddingBottom += this.heightMap[i];
+        this.set({
+          top: paddingTop,
+          bottom: paddingBottom,
+          start: newStart,
+          end: newEnd
+        });
+      }
+    }
+  };
+</script>

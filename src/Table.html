@@ -1,0 +1,130 @@
+<div class="tableview">
+  {#if results.length > 0}
+    <div class="tableview-contents">
+      <div class="table">
+        <VirtualTable items={results} component={RowComponent} bind:end=end />
+      </div>
+    </div>
+  {/if}
+</div>
+
+<script>
+  import VirtualTable from './VirtualTable.html';
+  import Papa from 'papaparse';
+  import RowComponent from './Row.html';
+
+  export default {
+    oncreate() {
+      const {results, at_a_time, csv} = this.get();
+      const limit = results.length + at_a_time;
+      this.set({limit});
+      Papa.parse(csv, {
+        download: true,
+        delimiter: ',',
+        step: (result, parser) => {
+          const {results} = this.get();
+          results.push({
+            index: results.length,
+            data: result.data[0],
+          });
+          this.set({results});
+          if (results.length > this.get().limit) {
+            parser.pause();
+            this.set({parser});
+          }
+        },
+      });
+    },
+
+    onstate({changed, current}) {
+      if (changed.end && current.end == current.limit) {
+        this.set({limit: current.limit + current.at_a_time});
+        if (current.parser) current.parser.resume();
+      }
+    },
+
+    data() {
+      return {
+        csv: '',
+        results: [],
+        end: 0,
+        parser: null,
+        at_a_time: 5000,
+        limit: 1,
+        RowComponent,
+      };
+    },
+    components: {VirtualTable}
+  };
+</script>
+
+<style>
+  .table {
+    height: 100%;
+  }
+
+  .tableview {
+    height: 100%;
+  }
+
+  .tableview-contents {
+    height: 100%;
+    overflow: auto;
+  }
+
+  :global(.row) {
+    display: table-row;
+  }
+
+  :global(.table > div > div) {
+    display: table;
+  }
+
+  :global(.cell) {
+    display: table-cell;
+    border-bottom: 1px solid gray;
+    vertical-align: middle;
+    word-break: break-word;
+  }
+
+  :global(.header .cell) {
+    border-top: solid 1px gray;
+  }
+
+  :global(.first) {
+    border-left: solid 1px gray;
+    text-align: left;
+  }
+
+  :global(.cell + .cell) {
+    border-left: 1px solid gray;
+  }
+
+  :global(.flow) {
+    padding: 0.3em;
+    width: 100px;
+    max-width: 100px;
+    user-select: none;
+    display: block;
+  }
+
+  :global(.first .flow) {
+    width: 50px;
+  }
+
+  :global(.header.fixed) {
+    position: absolute;
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  :global(.header .flow) {
+    height: 100%;
+    overflow: auto;
+  }
+
+  :global(.first, .header .cell) {
+    background: #eeeeee;
+    color: #2b2b2b;
+  }
+</style>
