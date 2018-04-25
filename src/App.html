@@ -6,12 +6,13 @@
   <div>Looking at <b>{file.name}</b></div>
   <div><button on:click="set({file: null})">Reset</button></div>
   <div class="limited">
-    <Table csv={file} limit="-1" on:complete="handleResults(event)" />
+    <Table csv={file} dataset={dataset} limit="-1" on:complete="handleResults(event)" />
   </div>
 {/if}
 
 <script>
   import Table from './table.html';
+  import {Dataset, Column} from 'infernet/lib/dataset.js';
   import {UntypedSeries} from 'infernet/lib/untyped_series.js';
 
   // Return an element and all of its parents as an array.
@@ -25,6 +26,7 @@
     data() {
       return {
         file: null,
+        dataset: null,
       };
     },
     methods: {
@@ -37,11 +39,16 @@
       },
 
       handleResults(results) {
-        const columns = results[0].data;
-        const series = columns.map((column, i) => {
-          return new UntypedSeries(results.slice(1).map((row) => row.data[i]));
+        const dataColumns = results[0].data;
+        const columns = dataColumns.map((column, i) => {
+          const name = results[0].data[i]; // get header name
+          const untypedSeries = new UntypedSeries(results.slice(1).map((row) => row.data[i]), name);
+          const series = untypedSeries.auto();
+          return new Column(name, series);
         });
-        console.log(series.map((x) => x.inferType().name));
+        const dataset = new Dataset(columns);
+        console.log(dataset);
+        this.set({dataset});
       },
 
       // Prevent two-finger swipe back navigation in browser.

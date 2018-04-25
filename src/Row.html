@@ -6,7 +6,15 @@
 {#each data as cell}
   <div class="cell">
     <div class="flow">
-      {cell}
+      <Cell :cell />
     </div>
   </div>
 {/each}
+
+<script>
+  import Cell from './Cell.html';
+
+  export default {
+    components: {Cell},
+  }
+</script>

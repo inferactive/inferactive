@@ -1,8 +1,12 @@
 <div class="tableview">
-  {#if results.length > 0}
+  {#if results.length > 0 || dataset != null}
     <div class="tableview-contents">
       <div class="table">
-        <VirtualTable items={results} component={RowComponent} bind:end=end />
+        {#if dataset != null}
+          <VirtualTable :dataset component={RowComponent} bind:end=end />
+        {:else}        
+          <VirtualTable rows={results} component={RowComponent} bind:end=end />
+        {/if}
       </div>
     </div>
   {/if}
@@ -114,6 +118,7 @@
 
   :global(.header .cell) {
     border-top: solid 1px gray;
+    vertical-align: bottom;
   }
 
   :global(.first) {

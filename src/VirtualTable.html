@@ -37,6 +37,11 @@
     },
 
     computed: {
+      items: ({rows, dataset}) => {
+        if (dataset == null) return rows;
+        console.log(dataset.allRows(true));
+        return dataset.allRows(true);
+      },
       visible: ({ items, start, end }) => {
         return items.slice(start, end).map((data, i) => {
           return { index: i + start, data };

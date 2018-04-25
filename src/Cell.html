@@ -1,0 +1,48 @@
+{#if cell instanceof BasicType}
+  {#if cell instanceof Header}
+    <div class="header">
+      <div class="name">{cell.data.name}</div>
+      <div class="type">{cell.data.type.name}</div>
+    </div>
+  {:elseif (cell instanceof Float) || (cell instanceof Int)}
+    <div class="numeric">{cell.data}</div>
+  {:elseif cell instanceof Nominal}
+    <div class="string">{cell.data}</div>
+  {:elseif cell instanceof Null}
+    <div class="null">null</div>
+  {/if}
+{:else}
+  {cell}
+{/if}
+
+<style>
+  .numeric {
+    color: green;
+  }
+
+  .null {
+    color: lightgray;
+    font-style: italic;
+  }
+
+  .type {
+    font-size: 0.9em;
+    font-weight: bold;
+  }
+</style>
+
+<script>
+  import {BasicType} from 'infernet/lib/signature.js';
+  import {Header} from 'infernet/lib/header.js';
+  import {Float, Int} from 'infernet/lib/quantitative.js';
+  import {Nominal} from 'infernet/lib/nominal.js';
+  import {Null} from 'infernet/lib/null.js';
+
+  export default {
+    data() {
+      return {
+        BasicType, Header, Float, Int, Nominal, Null,
+      };
+    },
+  };
+</script>
