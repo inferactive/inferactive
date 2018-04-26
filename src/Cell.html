@@ -6,6 +6,10 @@
     </div>
   {:elseif (cell instanceof Float) || (cell instanceof Int)}
     <div class="numeric">{cell.data}</div>
+  {:elseif cell instanceof Time}
+    <div class="time">{cell.toString()}</div>
+  {:elseif cell instanceof CategoricalBase}
+    <div class="categorical">{cell.data}</div>
   {:elseif cell instanceof Nominal}
     <div class="string">{cell.data}</div>
   {:elseif cell instanceof Null}
@@ -25,9 +29,23 @@
     font-style: italic;
   }
 
-  .type {
+  .name {
     font-size: 0.9em;
     font-weight: bold;
+  }
+
+  .type {
+    color: gray;
+  }
+
+  .time {
+    font-family: monospace;
+    font-weight: bold;
+    color: #5a5a5a;
+  }
+
+  .categorical {
+    color: #2646a7;
   }
 </style>
 
@@ -36,12 +54,14 @@
   import {Header} from 'infernet/lib/header.js';
   import {Float, Int} from 'infernet/lib/quantitative.js';
   import {Nominal} from 'infernet/lib/nominal.js';
+  import {CategoricalBase} from 'infernet/lib/categorical.js';
+  import {Time} from 'infernet/lib/temporal.js';
   import {Null} from 'infernet/lib/null.js';
 
   export default {
     data() {
       return {
-        BasicType, Header, Float, Int, Nominal, Null,
+        BasicType, Header, Float, Int, Time, Nominal, CategoricalBase, Null,
       };
     },
   };

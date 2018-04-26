@@ -13,7 +13,9 @@
     "rollup": "^0.58.1",
     "rollup-plugin-buble": "^0.19.2",
     "rollup-plugin-commonjs": "^9.1.0",
+    "rollup-plugin-json": "^2.3.0",
     "rollup-plugin-node-resolve": "^3.0.3",
+    "rollup-plugin-npm": "^2.0.0",
     "rollup-plugin-svelte": "^4.0.0",
     "rollup-plugin-uglify": "^3.0.0",
     "serve": "^6.5.6",
@@ -44,6 +46,9 @@
   "dependencies": {
     "@ava/babel-preset-stage-4": "^1.1.0",
     "@sveltejs/svelte-virtual-list": "^2.0.0",
-    "papaparse": "^4.3.7"
+    "papaparse": "^4.3.7",
+    "vega": "^3.3.1",
+    "vega-embed": "^3.7.1",
+    "vega-lite": "^2.4.0"
   }
 }

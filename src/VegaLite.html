@@ -1,0 +1,13 @@
+<div ref:embed></div>
+
+<script>
+  import vegaEmbed from 'vega-embed';
+
+  export default {
+    oncreate() {
+      const {config} = this.get();
+      console.log('creating', config);
+      vegaEmbed(this.refs.embed, config);
+    },
+  }
+</script>

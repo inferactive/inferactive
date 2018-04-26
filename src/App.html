@@ -1,19 +1,50 @@
 <svelte:window on:mousewheel="preventBack(event)"/>
 
 {#if file == null}
-  <div>Upload a CSV file</div><input ref:files type="file" on:change="updateFiles()">
+  <div class="landing">
+    <div class="centered">
+      <div class="narrow">
+        <h1 class="logo">Inferactive</h1>
+        <h2>Stories and visualizations from data</h2>
+        <div>
+          <div class="fileupload">
+            <input ref:files type="file" on:change="updateFiles()" width="115">
+            <button>Upload a CSV</button>
+          </div> to get started
+        </div>
+        <p>
+          Inferactive is a work-in-progress tool to suggest story ideas and visualizations from column-based datasets.
+        </p>
+        <hr>
+        <p>
+          <a href="https://docs.google.com/document/d/12KQVeYcTua4pRMlxLvPGMSCS-iHHbL5vhmmtM90IGWI/edit?usp=sharing">Learn more</a> or <a href="https://github.com/inferactive">read the source code</a>.          
+        </p>
+      </div>
+    </div>
+  </div>
 {:else}
   <div>Looking at <b>{file.name}</b></div>
   <div><button on:click="set({file: null})">Reset</button></div>
   <div class="limited">
     <Table csv={file} dataset={dataset} limit="-1" on:complete="handleResults(event)" />
   </div>
+
+  {#if visualizations != null && visualizations.length > 0}
+    <div>
+      <h1>Visualizations:</h1>
+      {#each visualizations as visualization}
+        <VegaLite config={visualization} />
+      {/each}
+    </div>
+  {/if}
 {/if}
 
 <script>
-  import Table from './table.html';
+  import Table from './Table.html';
+  import VegaLite from './VegaLite.html';
   import {Dataset, Column} from 'infernet/lib/dataset.js';
   import {UntypedSeries} from 'infernet/lib/untyped_series.js';
+  import {CategoricalBase} from 'infernet/lib/categorical.js';
 
   // Return an element and all of its parents as an array.
   function elemAndParents(elem) {
@@ -23,6 +54,19 @@
   }
 
   export default {
+    computed: {
+      visualizations: ({dataset}) => {
+        if (dataset == null) return null;
+        const visualizations = [];
+        dataset.columns.forEach((column) => {
+          console.log(column);
+          if (column.series.type.prototype instanceof CategoricalBase) {
+            visualizations.push(dataset.toVegaHistogram(column.name));
+          }
+        });
+        return visualizations;
+      },
+    },
     data() {
       return {
         file: null,
@@ -67,14 +111,52 @@
         }
       },
     },
-    components: {Table},
+    components: {Table, VegaLite},
   };
 </script>
 
 <style>
+  :global(.logo) {
+    color: #1ECB02;
+  }
+
+  .landing {
+    width: 100%;
+    height: 100%;
+    display: table;
+  }
+
+  .centered {
+    display: table-cell;
+    vertical-align: middle;
+  }
+
+  .narrow {
+    width: 488px;
+    margin: auto;
+  }
+
   .limited {
     height: 800px;
     border: solid 1px gray;
     box-sizing: border-box;
+  }
+
+  .fileupload {
+    position: relative;
+    display: inline-block;
+  }
+
+  .fileupload button {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+  }
+
+  ref:files {
+    opacity: 0;
+    z-index: 2;
+    max-width: 122px;
   }
 </style>
