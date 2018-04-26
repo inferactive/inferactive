@@ -64,6 +64,15 @@
             visualizations.push(dataset.toVegaHistogram(column.name));
           }
         });
+        for (let i = 1; i < dataset.columns.length; i++) {
+          for (let j = 0; j < i; j++) {
+            const column1 = dataset.columns[i];
+            const column2 = dataset.columns[j];
+            if (column1.series.type.prototype instanceof CategoricalBase && column2.series.type.prototype instanceof CategoricalBase) {
+              visualizations.push(dataset.toVegaBubbleChart(column1.name, column2.name));
+            }
+          }
+        }
         return visualizations;
       },
     },
