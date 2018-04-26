@@ -1,5 +1,15 @@
 <div ref:embed></div>
 
+<style>
+  ref:embed {
+    display: inline-block;
+    vertical-align: top;
+    border: solid 1px #dedede;
+    margin: 0.5em;
+    background: white;
+  }
+</style>
+
 <script>
   import vegaEmbed from 'vega-embed';
 
@@ -7,7 +17,10 @@
     oncreate() {
       const {config} = this.get();
       console.log('creating', config);
-      vegaEmbed(this.refs.embed, config);
+      vegaEmbed(this.refs.embed, config, {
+        runAsync: true,
+        actions: false,
+      });
     },
   }
 </script>

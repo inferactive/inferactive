@@ -24,18 +24,28 @@
   </div>
 {:else}
   <div>Looking at <b>{file.name}</b></div>
-  <div><button on:click="set({file: null})">Reset</button></div>
+  <div><button on:click="set({file: null, dataset: null})">Reset</button></div>
   <div class="limited">
     <Table csv={file} dataset={dataset} limit="-1" on:complete="handleResults(event)" />
   </div>
 
-  {#if visualizations != null && visualizations.length > 0}
-    <div>
-      <h1>Visualizations:</h1>
-      {#each visualizations as visualization}
-        <VegaLite config={visualization} />
-      {/each}
-    </div>
+  {#if visualizations != null}
+    {#await visualizations}
+      <div>
+        <h1>Loading visuals</h1>
+      </div>
+    {:then visuals}
+      <div>
+        <h1>Visualizations:</h1>
+        {#each visuals as visualization}
+          <VegaLite config={visualization} />
+        {/each}
+      </div>
+    {:catch error}
+      <div>
+        <h1>Error loading visuals</h1>
+      </div>
+    {/await}
   {/if}
 {/if}
 
@@ -57,23 +67,36 @@
     computed: {
       visualizations: ({dataset}) => {
         if (dataset == null) return null;
-        const visualizations = [];
-        dataset.columns.forEach((column) => {
-          console.log(column);
-          if (column.series.type.prototype instanceof CategoricalBase) {
-            visualizations.push(dataset.toVegaHistogram(column.name));
-          }
-        });
-        for (let i = 1; i < dataset.columns.length; i++) {
-          for (let j = 0; j < i; j++) {
-            const column1 = dataset.columns[i];
-            const column2 = dataset.columns[j];
-            if (column1.series.type.prototype instanceof CategoricalBase && column2.series.type.prototype instanceof CategoricalBase) {
-              visualizations.push(dataset.toVegaBubbleChart(column1.name, column2.name));
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            const visualizations = [];
+            dataset.columns.forEach((column) => {
+              if (((column.series.type.prototype instanceof CategoricalBase && column.series.type.categories().size > 1) || column.series.typeSpec == 'quantitative' || column.series.typeSpec == 'temporal') && (column.series.type.name != 'Latitude' && column.series.type.name != 'Longitude')) {
+                visualizations.push(dataset.toVegaHistogram(column.name));
+              }
+            });
+            for (let i = 1; i < dataset.columns.length; i++) {
+              for (let j = 0; j < i; j++) {
+                const column1 = dataset.columns[i];
+                const column2 = dataset.columns[j];
+                if (column1.series.type.prototype instanceof CategoricalBase && column2.series.type.prototype instanceof CategoricalBase && column1.series.type.categories().size > 1 && column2.series.type.categories().size > 1) {
+                  visualizations.push(dataset.toVegaBubbleChart(column1.name, column2.name));
+                }
+                if (column1.series.type.name == 'Latitude' && column2.series.type.name == 'Longitude') {
+                  console.log('making spec');
+                  visualizations.push(dataset.toVegaUSGeoViz(column1.name, column2.name));
+                  console.log(visualizations);
+                }
+                if (column1.series.type.name == 'Longitude' && column2.series.type.name == 'Latitude') {
+                  console.log('making spec');
+                  visualizations.push(dataset.toVegaUSGeoViz(column2.name, column1.name));
+                  console.log(visualizations);
+                }
+              }
             }
-          }
-        }
-        return visualizations;
+            return resolve(visualizations);
+          }, 50);
+        });
       },
     },
     data() {
